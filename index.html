@@ -396,12 +396,10 @@ if (
   <span>${paper.subject}</span>
 
   <div class="btn-group">
-    <button class="btn view" onclick="viewPdf('${paper.pdfUrl}')">
-      View
-    </button>
-
-    <a class="btn download" href="${paper.pdfUrl}" download>
-      Download
+    <a class="btn download"
+       href="${paper.pdfUrl}"
+       target="_blank">
+       Open Paper
     </a>
   </div>
 </div>
