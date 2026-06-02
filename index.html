@@ -437,11 +437,7 @@ window.addEventListener("load", () => {
   loadPapers();
 });
 window.viewPdf = function(url) {
-  window.open(
-    "https://docs.google.com/gview?embedded=1&url=" +
-    encodeURIComponent(url),
-    "_blank"
-  );
+  window.open(url, "_blank");
 };
 
 </script>
