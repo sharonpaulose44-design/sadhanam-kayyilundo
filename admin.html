@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - Sadhanam Kayyilundo</title>
+</head>
+<body>
+
+<h3>ADMIN PANEL</h3>
+<style>
+body {
+  font-family: 'Roboto', sans-serif;
+  background: #f5f7fb;
+  margin: 0;
+  padding: 0;
+}
+
+/* Header */
+h3{
+  text-align: center;
+  font-family: 'Roboto', sans-serif;
+  padding: 20px;
+  background: #2563eb;
+  color: white;
+  margin: 0;
+}
+
+/* Container */
+#papers {
+  width: 90%;
+  max-width: 900px;
+  margin: 20px auto;
+}
+
+/* Paper Card */
+.paper-card {
+  background: white;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: 0.2s ease;
+}
+
+.paper-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Text */
+.paper-card h3 {
+  margin: 0 0 8px 0;
+  color: #111827;
+}
+
+.paper-card p {
+  margin: 4px 0;
+  color: #4b5563;
+  font-size: 14px;
+}
+
+/* Button group */
+.btn-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* Buttons */
+.btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s ease;
+}
+
+/* View */
+.view-btn {
+  background: #2563eb;
+  color: white;
+}
+
+.view-btn:hover {
+  background: #1d4ed8;
+}
+
+/* Approve */
+.approve-btn {
+  background: #22c55e;
+  color: white;
+}
+
+.approve-btn:hover {
+  background: #16a34a;
+}
+
+/* Reject */
+.reject-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.reject-btn:hover {
+  background: #dc2626;
+}
+
+/* Delete */
+.delete-btn {
+  background: #111827;
+  color: white;
+}
+
+.delete-btn:hover {
+  background: #000;
+}
+
+/* Status */
+.status {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.status.approved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status.pending {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.status.rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+</style>
+
+<div id="loginBox" style="text-align:center; margin-top:100px;">
+  <h2>Admin Login</h2>
+
+  <input type="password" id="adminPass" placeholder="Enter Password" style="
+    padding:10px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    width:200px;
+  ">
+
+  <br><br>
+
+  <button onclick="login()" style="
+    background:#2563eb;
+    color:white;
+    border:none;
+    padding:10px 20px;
+    border-radius:8px;
+    cursor:pointer;
+  ">
+    Login
+  </button>
+
+  <p id="errorMsg" style="color:red;"></p>
+</div>
+
+<div id="adminPanel" style="display:none;">
+  <div id="papers"></div>
+</div>
+<script type="module">
+  
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+  deleteDoc
+  
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+ import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDtVwW1Ftz8q8XJukMGgSV5qsqZc9Fl2M0",
+  authDomain: "sadhanam-kayyilundo-c39dd.firebaseapp.com",
+  projectId: "sadhanam-kayyilundo-c39dd",
+  storageBucket: "sadhanam-kayyilundo-c39dd.firebasestorage.app",
+  messagingSenderId: "986132708992",
+  appId: "1:986132708992:web:724843c7e3ef675315b065"
+};
+const supabase = createClient(
+  "https://xczmunaxzkzfapksolxc.supabase.co",
+  "sb_publishable_x2ZQqhJabAfgZiA7bY9C-Q_FIVcc7Va"
+);
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.login = function () {
+
+  console.log("clicked");
+
+  const pass = document.getElementById("adminPass").value;
+
+  const loginBox = document.getElementById("loginBox");
+  const adminPanel = document.getElementById("adminPanel");
+
+  console.log(loginBox, adminPanel); // debug
+
+  if (!loginBox || !adminPanel) {
+    alert("HTML IDs missing!");
+    return;
+  }
+
+  if (pass === "1234") {
+
+  sessionStorage.setItem("adminLoggedIn", "true");
+
+  document.getElementById("loginBox").style.display = "none";
+  document.getElementById("adminPanel").style.display = "block";
+
+  loadPapers();
+}
+};
+
+async function loadPapers() {
+
+  const papersDiv = document.getElementById("papers");
+  papersDiv.innerHTML = "";
+
+  try {
+
+    const querySnapshot = await getDocs(collection(db, "papers"));
+
+    querySnapshot.forEach((paperDoc) => {
+
+      const paper = paperDoc.data();
+      const id = paperDoc.id;
+
+      papersDiv.innerHTML += `
+        <div style="
+          border:1px solid #ccc;
+          padding:10px;
+          margin:10px;
+          border-radius:10px;
+        ">
+
+          <h3>${paper.subject}</h3>
+          <p>Branch: ${paper.branch}</p>
+          <p>Semester: ${paper.semester}</p>
+          <p>Exam: ${paper.examType}</p>
+          <p>Status: ${paper.status}</p>
+
+          <div style="margin-top:10px; display:flex; gap:10px;">
+
+            <button onclick="viewPdf('${paper.pdfUrl}')"
+              style="background:#2563eb;color:white;border:none;padding:8px 12px;border-radius:8px;">
+              View
+            </button>
+
+            <button onclick="approvePaper('${id}')"
+              style="background:#22c55e;color:white;border:none;padding:8px 12px;border-radius:8px;">
+              Approve
+            </button>
+
+            <button onclick="rejectPaper('${id}')"
+              style="background:#ef4444;color:white;border:none;padding:8px 12px;border-radius:8px;">
+              Reject
+            </button>
+
+            <button onclick="deletePaper('${id}', '${paper.pdfUrl}')"
+              style="background:#111827;color:white;border:none;padding:8px 12px;border-radius:8px;">
+              Delete
+            </button>
+
+          </div>
+        </div>
+      `;
+    });
+
+  } catch(error) {
+    papersDiv.innerHTML = "<h3>Error: " + error.message + "</h3>";
+  }
+}
+ 
+
+
+
+window.approvePaper = async function(id) {
+
+  await updateDoc(
+    doc(db, "papers", id),
+    {
+      status: "approved"
+    }
+  );
+
+  alert("Paper Approved");
+
+  location.reload();
+
+}
+
+window.rejectPaper = async function(id) {
+
+  await updateDoc(
+    doc(db, "papers", id),
+    {
+      status: "rejected"
+    }
+  );
+
+  alert("Paper Rejected");
+
+  location.reload();
+};
+window.viewPdf = function(url) {
+  window.open(
+    "https://docs.google.com/gview?embedded=1&url=" +
+    encodeURIComponent(url),
+    "_blank"
+  );
+}
+window.deletePaper = async function(id, url) {
+
+  const confirmDelete = confirm("Are you sure you want to delete this paper?");
+  if (!confirmDelete) return;
+
+  try {
+    // 1. Delete Firestore document
+    await deleteDoc(doc(db, "papers", id));
+
+    // 2. Delete file from Supabase
+    const fileName = url.split("/").pop();
+
+    await supabase.storage
+      .from("papers")
+      .remove([fileName]);
+
+    alert("Paper deleted successfully");
+
+    location.reload();
+
+  } catch (error) {
+    alert("Delete failed: " + error.message);
+  }
+};
+window.addEventListener("load", () => {
+
+  const isLoggedIn = sessionStorage.getItem("adminLoggedIn");
+
+  if (isLoggedIn === "true") {
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("adminPanel").style.display = "block";
+    loadPapers();
+  }
+});
+
+</script>
+
+
+</body>
+</html>
