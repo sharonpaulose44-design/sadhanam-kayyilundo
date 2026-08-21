@@ -657,6 +657,101 @@ button{
 
         font-size:9px;
     }
+/* ================================
+   LOADING SCREEN
+================================ */
+
+#loadingScreen {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background:
+        radial-gradient(circle at center, #102b55 0%, #07162d 45%, #030914 100%);
+
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+
+#loadingScreen.hide {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.loader-content {
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+}
+
+.loader-logo {
+    width: 72px;
+    height: 72px;
+
+    margin: 0 auto 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 18px;
+
+    background: linear-gradient(135deg, #123b73, #0a2348);
+
+    border: 1px solid rgba(80, 150, 255, 0.35);
+
+    color: #ffffff;
+
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 1px;
+
+    box-shadow: 0 10px 35px rgba(0, 80, 180, 0.25);
+}
+
+.loader-content h1 {
+    margin: 0;
+
+    color: #ffffff;
+
+    font-size: 25px;
+    font-weight: 600;
+
+    letter-spacing: -0.3px;
+}
+
+.loader-content p {
+    margin: 8px 0 25px;
+
+    color: #91a8c7;
+
+    font-size: 13px;
+}
+
+/* Loader */
+
+.loader {
+    width: 32px;
+    height: 32px;
+
+    margin: auto;
+
+    border: 3px solid rgba(255, 255, 255, 0.15);
+    border-top-color: #3d8cff;
+
+    border-radius: 50%;
+
+    animation: loadingSpin 0.8s linear infinite;
+}
+
+@keyframes loadingSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
 
 }
 
@@ -673,6 +768,17 @@ button{
 ======================================== -->
 
 <header>
+<!-- LOADING SCREEN -->
+<div id="loadingScreen">
+    <div class="loader-content">
+        <div class="loader-logo">SK</div>
+
+        <h1>Sadhanam Kayyilundo</h1>
+        <p>Your Question Papers, One Place.</p>
+
+        <div class="loader"></div>
+    </div>
+</div>
 
     <h1>📚 Sadhanam Kayyilundo</h1>
 
