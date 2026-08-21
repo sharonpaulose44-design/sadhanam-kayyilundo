@@ -27,31 +27,92 @@
     box-sizing:border-box;
 }
 
+/* Darker navy background */
 body{
-
     background:
-
         radial-gradient(
             circle at 90% 0%,
-            rgba(37,99,235,.15),
+            rgba(20,55,120,.12),
             transparent 28%
         ),
-
         radial-gradient(
             circle at 0% 100%,
-            rgba(30,64,175,.10),
+            rgba(15,45,100,.08),
             transparent 25%
         ),
-
-        #050B18;
-
-    color:#F1F5F9;
-
-    min-height:100vh;
-
-    font-family:'Plus Jakarta Sans',sans-serif;
+        #030817;
 }
 
+
+/* Darker cards */
+.card{
+    background:
+        linear-gradient(
+            145deg,
+            #071326,
+            #050D1C
+        );
+
+    border:1px solid #12243D;
+}
+
+
+/* Darker inputs */
+select,
+input[type="text"],
+input[type="file"]{
+    background:#040C19;
+    border:1px solid #172D4A;
+}
+
+
+/* Darker View Papers button */
+.btn,
+.upload-btn{
+    background:
+        linear-gradient(
+            135deg,
+            #1746A2,
+            #12377F
+        );
+}
+
+
+/* Hover */
+.btn:hover,
+.upload-btn:hover{
+    background:
+        linear-gradient(
+            135deg,
+            #2058C4,
+            #1746A2
+        );
+}
+
+
+/* Darker paper cards */
+.paper{
+    background:
+        linear-gradient(
+            145deg,
+            #08172A,
+            #061221
+        );
+
+    border:1px solid #152B46;
+}
+
+
+/* Open Paper button */
+.paper a{
+    background:#1746A2 !important;
+    border-color:#285BC0 !important;
+}
+
+
+.paper a:hover{
+    background:#2058C4 !important;
+}
 
 /* ========================================
    HEADER
