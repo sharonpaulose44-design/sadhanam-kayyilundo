@@ -1441,5 +1441,14 @@ window.viewPdf = function (url) {
 };
 
 </script>
+<script>
+window.addEventListener("load", function () {
+    const loadingScreen = document.getElementById("loadingScreen");
+
+    setTimeout(() => {
+        loadingScreen.classList.add("hide");
+    }, 500);
+});
+</script>
 </body>
 </html>
