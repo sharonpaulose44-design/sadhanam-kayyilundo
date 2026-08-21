@@ -673,188 +673,591 @@ Upload For Review
 </footer>
 <script type="module">
 
-  
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
 import {
-  getFirestore,
-  collection,
-  addDoc,
-  getDocs
+    getFirestore,
+    collection,
+    addDoc,
+    getDocs,
+    query,
+    where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-  import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
+import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
+
+/* ========================================
+   FIREBASE
+======================================== */
+
 const firebaseConfig = {
-  apiKey: "AIzaSyDtVwW1Ftz8q8XJukMGgSV5qsqZc9Fl2M0",
-  authDomain: "sadhanam-kayyilundo-c39dd.firebaseapp.com",
-  projectId: "sadhanam-kayyilundo-c39dd",
-  storageBucket: "sadhanam-kayyilundo-c39dd.firebasestorage.app",
-  messagingSenderId: "986132708992",
-  appId: "1:986132708992:web:724843c7e3ef675315b065"
+
+    apiKey: "AIzaSyDtVwW1Ftz8q8XJukMGgSV5qsqZc9Fl2M0",
+
+    authDomain: "sadhanam-kayyilundo-c39dd.firebaseapp.com",
+
+    projectId: "sadhanam-kayyilundo-c39dd",
+
+    storageBucket: "sadhanam-kayyilundo-c39dd.firebasestorage.app",
+
+    messagingSenderId: "986132708992",
+
+    appId: "1:986132708992:web:724843c7e3ef675315b065"
 };
 
 const app = initializeApp(firebaseConfig);
+
 const db = getFirestore(app);
 
+
+/* ========================================
+   SUPABASE
+======================================== */
+
 const supabase = createClient(
-  "https://xczmunaxzkzfapksolxc.supabase.co",
-  "sb_publishable_x2ZQqhJabAfgZiA7bY9C-Q_FIVcc7Va"
+
+    "https://xczmunaxzkzfapksolxc.supabase.co",
+
+    "sb_publishable_x2ZQqhJabAfgZiA7bY9C-Q_FIVcc7Va"
+
 );
 
-window.uploadPaper = async function() {
 
-  const file =
-    document.getElementById("pdfFile").files[0];
+/* ========================================
+   PAPER CACHE
+======================================== */
 
-  const subject =
-    document.getElementById("subject").value;
+/*
+   Stores papers using:
 
-  const branch =
-    document.getElementById("branch").value;
+   Branch + Semester + Exam
 
-  const semester =
-    document.getElementById("semester").value;
+   Example:
 
-  const exam =
-    document.getElementById("exam").value;
-    if (
-  branch === "Select Branch" ||
-  semester === "Select Semester" ||
-  exam === "Select Exam" ||
-  subject.trim() === ""
-) {
-  alert("Please fill all fields");
-  return;
+   CSE-Semester 3-1st Internal
+*/
+
+const paperCache = new Map();
+
+
+/* ========================================
+   DISPLAY PAPERS
+======================================== */
+
+function displayPapers(papers){
+
+    const papersList =
+        document.getElementById("papersList");
+
+    papersList.innerHTML = "";
+
+
+    /* No papers */
+
+    if(papers.length === 0){
+
+        papersList.innerHTML = `
+            <div style="
+                display:flex;
+                justify-content:center;
+                align-items:center;
+                min-height:100px;
+                color:#8195AF;
+                font-size:15px;
+                font-weight:500;
+            ">
+                No papers Available
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* Display papers */
+
+    papers.forEach((paper) => {
+
+        papersList.innerHTML += `
+
+            <div class="paper">
+
+                <span>
+                    ${paper.subject}
+                </span>
+
+                <div class="btn-group">
+
+                    <a
+                        class="btn download"
+                        href="${paper.pdfUrl}"
+                        target="_blank"
+                    >
+                        Open Paper
+                    </a>
+
+                </div>
+
+            </div>
+
+        `;
+
+    });
+
 }
-  if (!file) {
-    alert("Please select a PDF");
-    return;
-  }
-  if (file.type !== "application/pdf") {
-  alert("Only PDF files are allowed");
-  return;
-}
-
-  try {
-
-  const fileName =
-    Date.now() + "_" + file.name;
-
-  const { data, error } =
-    await supabase.storage
-      .from("papers")
-      .upload(fileName, file);
-
-  if (error) {
-    throw error;
-  }
-
-  const { data: publicData } =
-    supabase.storage
-      .from("papers")
-      .getPublicUrl(fileName);
-
-  const pdfUrl = publicData.publicUrl;
-await addDoc(collection(db, "papers"), {
-  subject: subject,
-  branch: branch,
-  semester: semester,
-  examType: exam,
-  pdfUrl: pdfUrl,
-  status: "pending"
-});
-
-  alert("Paper uploaded successfully!");
-  
-  document.getElementById("subject").value = "";
-document.getElementById("pdfFile").value = "";
-document.getElementById("branch").selectedIndex = 0;
-document.getElementById("semester").selectedIndex = 0;
-document.getElementById("exam").selectedIndex = 0;
-} catch(error) {
-
-  alert(error.message);
-
-}
-};
-
-window.loadPapers = async function() {
-
-  const papersList =
-    document.getElementById("papersList");
-
-  papersList.innerHTML = "";
-
-  const branch =
-    document.getElementById("filterBranch").value;
-
-  const semester =
-    document.getElementById("filterSemester").value;
-
-  const exam =
-    document.getElementById("filterExam").value;
-    sessionStorage.setItem("branch", branch);
-sessionStorage.setItem("semester", semester);
-sessionStorage.setItem("exam", exam);
 
 
-  const querySnapshot = await getDocs(
-    collection(db, "papers")
-  );
+/* ========================================
+   LOAD PAPERS
+======================================== */
 
-  querySnapshot.forEach((doc) => {
+window.loadPapers = async function(){
 
-    const paper = doc.data();
-if (
-  paper.status === "approved" &&
-  paper.branch === branch &&
-  paper.semester === semester &&
-  paper.examType === exam 
-){
+    const papersList =
+        document.getElementById("papersList");
 
-      papersList.innerHTML += `
-<div class="paper">
-  <span>${paper.subject}</span>
 
-  <div class="btn-group">
-    <a class="btn download"
-       href="${paper.pdfUrl}"
-       target="_blank">
-       Open Paper
-    </a>
-  </div>
-</div>
-`;
+    /* ------------------------------------
+       GET SELECTED VALUES
+    ------------------------------------ */
+
+    const branch =
+        document.getElementById("filterBranch").value;
+
+    const semester =
+        document.getElementById("filterSemester").value;
+
+    const exam =
+        document.getElementById("filterExam").value;
+
+
+    /* ------------------------------------
+       SAVE SELECTION
+    ------------------------------------ */
+
+    sessionStorage.setItem(
+        "branch",
+        branch
+    );
+
+    sessionStorage.setItem(
+        "semester",
+        semester
+    );
+
+    sessionStorage.setItem(
+        "exam",
+        exam
+    );
+
+
+    /* ------------------------------------
+       CREATE CACHE KEY
+    ------------------------------------ */
+
+    const cacheKey =
+        `${branch}-${semester}-${exam}`;
+
+
+    /* ------------------------------------
+       CHECK CACHE
+    ------------------------------------ */
+
+    if(paperCache.has(cacheKey)){
+
+        console.log(
+            "Loading papers from cache:",
+            cacheKey
+        );
+
+        const cachedPapers =
+            paperCache.get(cacheKey);
+
+        displayPapers(cachedPapers);
+
+        return;
+    }
+
+
+    /* ------------------------------------
+       SHOW LOADING
+    ------------------------------------ */
+
+    papersList.innerHTML = `
+
+        <div style="
+            text-align:center;
+            padding:30px;
+            color:#8195AF;
+        ">
+            Loading papers...
+        </div>
+
+    `;
+
+
+    try{
+
+        console.log(
+            "Fetching from Firestore:",
+            cacheKey
+        );
+
+
+        /* --------------------------------
+           QUERY ONLY REQUIRED PAPERS
+        -------------------------------- */
+
+        const papersQuery = query(
+
+            collection(db, "papers"),
+
+            where(
+                "branch",
+                "==",
+                branch
+            ),
+
+            where(
+                "semester",
+                "==",
+                semester
+            ),
+
+            where(
+                "examType",
+                "==",
+                exam
+            ),
+
+            where(
+                "status",
+                "==",
+                "approved"
+            )
+
+        );
+
+
+        const querySnapshot =
+            await getDocs(papersQuery);
+
+
+        /* --------------------------------
+           CREATE ARRAY
+        -------------------------------- */
+
+        const papers = [];
+
+
+        querySnapshot.forEach((doc) => {
+
+            papers.push({
+
+                id: doc.id,
+
+                ...doc.data()
+
+            });
+
+        });
+
+
+        /* --------------------------------
+           SAVE TO CACHE
+        -------------------------------- */
+
+        paperCache.set(
+            cacheKey,
+            papers
+        );
+
+
+        /* --------------------------------
+           DISPLAY
+        -------------------------------- */
+
+        displayPapers(papers);
+
+
+    }catch(error){
+
+        console.error(
+            "Error loading papers:",
+            error
+        );
+
+        papersList.innerHTML = `
+
+            <div style="
+                text-align:center;
+                padding:30px;
+                color:#EF4444;
+            ">
+                Failed to load papers.
+            </div>
+
+        `;
 
     }
 
-  });
-  if (papersList.innerHTML === "") {
-  papersList.innerHTML = `
-   <div style="display:flex; justify-content:center; align-items:center; min-height:100px; font-family:'Outfit', sans-serif; font-size:18px; font-weight:500;">
-    No papers Available 
-</div>
-  `;
-}
-}
+};
 
-window.addEventListener("load", () => {
 
-  const branch = sessionStorage.getItem("branch");
-  const semester = sessionStorage.getItem("semester");
-  const exam = sessionStorage.getItem("exam");
+/* ========================================
+   UPLOAD PAPER
+======================================== */
 
-  if (branch)
-    document.getElementById("filterBranch").value = branch;
+window.uploadPaper = async function(){
 
-  if (semester)
-    document.getElementById("filterSemester").value = semester;
+    const file =
+        document.getElementById("pdfFile").files[0];
 
-  if (exam)
-    document.getElementById("filterExam").value = exam;
+    const subject =
+        document.getElementById("subject").value;
 
-  loadPapers();
-});
-window.viewPdf = function(url) {
-  window.open(url, "_blank");
+    const branch =
+        document.getElementById("branch").value;
+
+    const semester =
+        document.getElementById("semester").value;
+
+    const exam =
+        document.getElementById("exam").value;
+
+
+    /* ------------------------------------
+       VALIDATION
+    ------------------------------------ */
+
+    if(
+
+        branch === "Select Branch" ||
+
+        semester === "Select Semester" ||
+
+        exam === "Select Exam" ||
+
+        subject.trim() === ""
+
+    ){
+
+        alert("Please fill all fields");
+
+        return;
+    }
+
+
+    if(!file){
+
+        alert("Please select a PDF");
+
+        return;
+    }
+
+
+    if(file.type !== "application/pdf"){
+
+        alert("Only PDF files are allowed");
+
+        return;
+    }
+
+
+    try{
+
+        /* --------------------------------
+           FILE NAME
+        -------------------------------- */
+
+        const fileName =
+            Date.now() + "_" + file.name;
+
+
+        /* --------------------------------
+           UPLOAD TO SUPABASE
+        -------------------------------- */
+
+        const { data, error } =
+            await supabase.storage
+                .from("papers")
+                .upload(
+                    fileName,
+                    file
+                );
+
+
+        if(error){
+
+            throw error;
+
+        }
+
+
+        /* --------------------------------
+           GET PUBLIC URL
+        -------------------------------- */
+
+        const { data: publicData } =
+            supabase.storage
+                .from("papers")
+                .getPublicUrl(
+                    fileName
+                );
+
+
+        const pdfUrl =
+            publicData.publicUrl;
+
+
+        /* --------------------------------
+           SAVE TO FIRESTORE
+        -------------------------------- */
+
+        await addDoc(
+
+            collection(
+                db,
+                "papers"
+            ),
+
+            {
+
+                subject: subject,
+
+                branch: branch,
+
+                semester: semester,
+
+                examType: exam,
+
+                pdfUrl: pdfUrl,
+
+                status: "pending"
+
+            }
+
+        );
+
+
+        alert(
+            "Paper uploaded successfully!"
+        );
+
+
+        /* --------------------------------
+           CLEAR FORM
+        -------------------------------- */
+
+        document.getElementById(
+            "subject"
+        ).value = "";
+
+
+        document.getElementById(
+            "pdfFile"
+        ).value = "";
+
+
+        document.getElementById(
+            "branch"
+        ).selectedIndex = 0;
+
+
+        document.getElementById(
+            "semester"
+        ).selectedIndex = 0;
+
+
+        document.getElementById(
+            "exam"
+        ).selectedIndex = 0;
+
+
+    }catch(error){
+
+        console.error(error);
+
+        alert(
+            error.message
+        );
+
+    }
+
+};
+
+
+/* ========================================
+   RESTORE LAST SELECTION
+======================================== */
+
+window.addEventListener(
+    "load",
+    () => {
+
+        const branch =
+            sessionStorage.getItem(
+                "branch"
+            );
+
+        const semester =
+            sessionStorage.getItem(
+                "semester"
+            );
+
+        const exam =
+            sessionStorage.getItem(
+                "exam"
+            );
+
+
+        if(branch){
+
+            document.getElementById(
+                "filterBranch"
+            ).value = branch;
+
+        }
+
+
+        if(semester){
+
+            document.getElementById(
+                "filterSemester"
+            ).value = semester;
+
+        }
+
+
+        if(exam){
+
+            document.getElementById(
+                "filterExam"
+            ).value = exam;
+
+        }
+
+
+        /* Load initial papers */
+
+        loadPapers();
+
+    }
+);
+
+
+/* ========================================
+   VIEW PDF
+======================================== */
+
+window.viewPdf = function(url){
+
+    window.open(
+        url,
+        "_blank"
+    );
+
 };
 
 </script>
