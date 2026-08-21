@@ -27,91 +27,64 @@
     box-sizing:border-box;
 }
 
-/* Darker navy background */
+/* ===== EXTRA DARK NAVY BLUE ===== */
+
 body{
-    background:
-        radial-gradient(
-            circle at 90% 0%,
-            rgba(20,55,120,.12),
-            transparent 28%
-        ),
-        radial-gradient(
-            circle at 0% 100%,
-            rgba(15,45,100,.08),
-            transparent 25%
-        ),
-        #030817;
+    background:#020611 !important;
 }
 
+header{
+    background:linear-gradient(
+        145deg,
+        #050B17,
+        #020611
+    ) !important;
+}
 
-/* Darker cards */
 .card{
-    background:
-        linear-gradient(
-            145deg,
-            #071326,
-            #050D1C
-        );
-
-    border:1px solid #12243D;
+    background:linear-gradient(
+        145deg,
+        #06101F,
+        #030A16
+    ) !important;
 }
 
-
-/* Darker inputs */
-select,
-input[type="text"],
-input[type="file"]{
-    background:#040C19;
-    border:1px solid #172D4A;
-}
-
-
-/* Darker View Papers button */
+/* VIEW PAPERS BUTTON */
 .btn,
 .upload-btn{
-    background:
-        linear-gradient(
-            135deg,
-            #1746A2,
-            #12377F
-        );
+    background:#0B2F70 !important;
+    border:1px solid #16458F !important;
 }
 
+/* OPEN PAPER BUTTON */
+.paper a{
+    background:#0B2F70 !important;
+    border:1px solid #16458F !important;
+}
 
 /* Hover */
 .btn:hover,
-.upload-btn:hover{
-    background:
-        linear-gradient(
-            135deg,
-            #2058C4,
-            #1746A2
-        );
-}
-
-
-/* Darker paper cards */
-.paper{
-    background:
-        linear-gradient(
-            145deg,
-            #08172A,
-            #061221
-        );
-
-    border:1px solid #152B46;
-}
-
-
-/* Open Paper button */
-.paper a{
-    background:#1746A2 !important;
-    border-color:#285BC0 !important;
-}
-
-
+.upload-btn:hover,
 .paper a:hover{
-    background:#2058C4 !important;
+    background:#0E3B8A !important;
+}
+
+/* Inputs */
+select,
+input[type="text"],
+input[type="file"]{
+    background:#030A15 !important;
+    border-color:#132A47 !important;
+}
+
+/* Paper cards */
+.paper{
+    background:linear-gradient(
+        145deg,
+        #071426,
+        #040C18
+    ) !important;
+    border-color:#132A47 !important;
 }
 
 /* ========================================
