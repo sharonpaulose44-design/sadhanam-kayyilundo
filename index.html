@@ -65,9 +65,7 @@ button, input, select {
 }
 
 @keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+    to { transform: rotate(360deg); }
 }
 
 .loader-title {
@@ -235,7 +233,7 @@ button:disabled {
 }
 
 #papersList {
-    min-height: 75px;
+    min-height: 40px;
     max-height: 450px;
     overflow-y: auto;
     scrollbar-width: thin;
@@ -472,7 +470,7 @@ footer span {
     <section class="card">
         <h2>Available Papers</h2>
         <div id="papersList">
-            <p class="empty-message">Loading papers...</p>
+            <p class="empty-message">Choose your filters and click Search Papers.</p>
         </div>
     </section>
 
@@ -480,12 +478,7 @@ footer span {
         <div class="section-label">Contribute to the library</div>
         <h2>Upload Question Paper</h2>
 
-        <input
-            type="text"
-            id="subject"
-            placeholder="Enter subject name"
-            maxlength="120"
-        >
+        <input type="text" id="subject" placeholder="Enter subject name" maxlength="120">
 
         <select id="branch">
             <option value="">Select Branch</option>
@@ -516,11 +509,7 @@ footer span {
             <option>End Semester</option>
         </select>
 
-        <input
-            type="file"
-            id="pdfFile"
-            accept=".pdf,application/pdf"
-        >
+        <input type="file" id="pdfFile" accept=".pdf,application/pdf">
 
         <p class="upload-note">
             PDF files only. Your paper will be reviewed by an admin before it appears in the library.
@@ -539,9 +528,7 @@ footer span {
 </footer>
 
 <script type="module">
-import {
-    initializeApp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
     getFirestore,
@@ -550,9 +537,7 @@ import {
     getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import {
-    createClient
-} from "https://esm.sh/@supabase/supabase-js";
+import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDtVwW1Ftz8q8XJukMGgSV5qsqZc9Fl2M0",
@@ -578,6 +563,7 @@ const uploadButton = document.getElementById("uploadButton");
 
 let papersCache = [];
 let loadingPapers = false;
+let hasLoadedPapers = false;
 
 function hideLoader() {
     loader.style.display = "none";
@@ -679,17 +665,24 @@ window.loadPapers = async function() {
     sessionStorage.setItem("semester", semester);
     sessionStorage.setItem("exam", exam);
 
-    showMessage("Loading papers...");
+    // Only show the loading message while the first fetch is in progress.
+    // On later searches, keep the current papers visible until results are ready.
+    if (!hasLoadedPapers) {
+        showMessage("Loading papers...");
+    }
 
     try {
         await fetchPapers();
+        hasLoadedPapers = true;
         renderPapers(branch, semester, exam);
     } catch (error) {
         console.error("Loading papers error:", error);
 
-        showMessage(
-            "Unable to load papers. Please check your internet connection and try again."
-        );
+        if (!hasLoadedPapers) {
+            showMessage(
+                "Unable to load papers. Please check your internet connection and try again."
+            );
+        }
     } finally {
         hideLoader();
         loadingPapers = false;
@@ -756,9 +749,7 @@ window.uploadPaper = async function() {
             status: "pending"
         });
 
-        alert(
-            "Paper uploaded successfully! It will appear after admin approval."
-        );
+        alert("Paper uploaded successfully! It will appear after admin approval.");
 
         document.getElementById("subject").value = "";
         document.getElementById("pdfFile").value = "";
@@ -768,11 +759,7 @@ window.uploadPaper = async function() {
 
     } catch (error) {
         console.error("Upload error:", error);
-
-        alert(
-            "Upload failed: " +
-            (error.message || "Please try again.")
-        );
+        alert("Upload failed: " + (error.message || "Please try again."));
     } finally {
         uploadButton.disabled = false;
         uploadButton.textContent = "Upload For Review";
