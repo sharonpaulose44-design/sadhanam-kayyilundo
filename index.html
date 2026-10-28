@@ -817,6 +817,16 @@ window.addEventListener("load", async function() {
     await window.loadPapers();
 });
 </script>
+<script>
+document.querySelectorAll('.status-message').forEach(function (message) {
+    message.addEventListener('contextmenu', function (e) {
+        e.preventDefault();
+    });
 
+    message.addEventListener('selectstart', function (e) {
+        e.preventDefault();
+    });
+});
+</script>
 </body>
 </html>
